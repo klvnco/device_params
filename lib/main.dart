@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:device_info/device_info.dart';
+import 'package:flutter/services.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -27,13 +30,54 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String deviceID,hardware,brand,id;
+  String deviceID,hardware,brand,id,identifierForVendor;
   DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+
+// android params
+//      'version.securityPatch'
+//      'version.sdkInt'
+//      'version.release'
+//      'version.previewSdkInt'
+//      'version.incremental'
+//      'version.codename'
+//      'version.baseOS'
+//      'board'
+//      'bootloader'
+//      'brand'
+//      'device'
+//      'display'
+//      'fingerprint'
+//      'hardware'
+//      'host'
+//      'id'
+//      'manufacturer'
+//      'model'
+//      'product'
+//      'supported32BitAbis'
+//      'supported64BitAbis'
+//      'supportedAbis'
+//      'tags'
+//      'type'
+//      'isPhysicalDevice'
+//      'androidId'
+//      'systemFeatures'
+
+
+//ios params
+//      'name'
+//      'systemName'
+//      'systemVersion'
+//      'model':
+//      'localizedModel'
+//      'identifierForVendor'
+//      'isPhysicalDevice'
+//      'utsname.sysname:'
+//      'utsname.nodename:'
+//      'utsname.release:'
+//      'utsname.version:'
+//      'utsname.machine:'
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +95,12 @@ class _MyHomePageState extends State<MyHomePage> {
               'These are the Device Variables:',
             ),
             Text('',),
-            Text('Device id : $deviceID',),
-            Text('hardware : $hardware',),
-            Text('brand : $brand',),
-            Text('id  : $id ',),
+            Text('android> Device id : $deviceID',),
+            //Text('android> hardware : $hardware',),
+            //Text('android> brand : $brand',),
+            //Text('android> id  : $id ',),
+            Text('ios> identifierForVendor : $identifierForVendor',),
+
           Container(
             child: RaisedButton(
                 textColor: Colors.white,
@@ -74,20 +120,31 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Text('Retrieve', style: TextStyle(fontSize: 20)),
                 ),
                   onPressed: () async {
-                _incrementCounter();
+                    try {
+                      if (Platform.isAndroid) {
+                        AndroidDeviceInfo androidDeviceInfo = await deviceInfoPlugin.androidInfo;
+                        setState(() {
+                          deviceID = androidDeviceInfo.androidId.toString();
+                          hardware=androidDeviceInfo.hardware.toString();
+                          brand=androidDeviceInfo.brand.toString();
+                          id=androidDeviceInfo.id.toString();
+                        },
+                        );
+                      } else if (Platform.isIOS) {
+                        IosDeviceInfo iosDeviceInfo = await deviceInfoPlugin.iosInfo;
+                        setState(() {
+                          print('identifierForVendor: ${iosDeviceInfo.identifierForVendor}');
+                          identifierForVendor=iosDeviceInfo.identifierForVendor.toString();
+                        },
+                        );
+                      }
+                    } on PlatformException {
+                      print('Error: Failed to get platform version.');
+                    }
 
-               AndroidDeviceInfo androidDeviceInfo = await deviceInfoPlugin.androidInfo;
-            setState(() {
-            print('androidId: ${androidDeviceInfo.androidId}');
-             print('hardware: ${androidDeviceInfo.hardware}');
-           print('brand: ${androidDeviceInfo.brand}');
-            print('id: ${androidDeviceInfo.id}');
-               deviceID = androidDeviceInfo.androidId.toString();
-            hardware=androidDeviceInfo.hardware.toString();
-            brand=androidDeviceInfo.brand.toString();
-            id=androidDeviceInfo.id.toString();
-             },
-             );}
+
+
+}
              )
           )
           ],
